@@ -1,4 +1,4 @@
-FROM ghcr.io/till0196/depgstation:depgstation-base AS base
+FROM ghcr.io/till0196/depgstation:base AS base
 
 ARG TARGETARCH
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"

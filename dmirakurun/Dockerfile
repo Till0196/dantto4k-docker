@@ -1,4 +1,4 @@
-FROM ghcr.io/till0196/dmirakurun:dmirakurun-base AS without-dnatto4k
+FROM ghcr.io/till0196/dmirakurun:base AS without-dnatto4k
 WORKDIR /app
 
 RUN apt-get update && \
@@ -9,7 +9,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM ghcr.io/till0196/dantto4k AS dantto4k
-FROM ghcr.io/till0196/dmirakurun:dmirakurun-base AS with-dantto4k
+FROM ghcr.io/till0196/dmirakurun:base AS with-dantto4k
 WORKDIR /app
 
 # Copy TSDuck deb files and Dantto4k binary from dantto4k image
