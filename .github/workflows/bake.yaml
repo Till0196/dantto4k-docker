@@ -24,24 +24,22 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Get bake targets from all group
+      - name: Get all build targets
         id: targets
         run: |
-          # Get targets from 'all' group in docker-bake.hcl
+          # Get all targets including matrix targets
           bake_data=$(docker buildx bake --print all)
-          targets=$(echo "$bake_data" | jq -r '.group.all.targets | @json')
-          echo "targets=$targets" >> $GITHUB_OUTPUT
+          all_targets=$(echo "$bake_data" | jq -r '.target | keys | @json')
+          echo "targets=$all_targets" >> $GITHUB_OUTPUT
 
       - name: Create target matrix with images
         id: target-matrix
         run: |
-          # Get all group targets and their corresponding images
+          # Get all targets and their corresponding images
           bake_data=$(docker buildx bake --print all)
           
           matrix=$(echo "$bake_data" | jq -c '
-            .group.all.targets as $targets |
             .target | to_entries | 
-            map(select(.key as $k | $targets | contains([$k]))) |
             map({
               target: .key,
               image: (.value.tags[0] // "ghcr.io/till0196/\(.key)" | split(":")[0])
@@ -60,6 +58,7 @@ jobs:
       fail-fast: false
       matrix:
         target-info: ${{ fromJson(needs.prepare.outputs.target-matrix) }}
+        platform: [linux/amd64, linux/arm64]
         include:
           - platform: linux/amd64
             runner: ubuntu-latest
