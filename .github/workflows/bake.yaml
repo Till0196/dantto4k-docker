@@ -1,0 +1,161 @@
+name: Build Docker Images
+run-name: Build Docker Images - ${{ github.event_name }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.targets.outputs.targets }}
+      target-matrix: ${{ steps.target-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get bake targets from all group
+        id: targets
+        run: |
+          # Get targets from 'all' group in docker-bake.hcl
+          bake_data=$(docker buildx bake --print all)
+          targets=$(echo "$bake_data" | jq -r '.group.all.targets | @json')
+          echo "targets=$targets" >> $GITHUB_OUTPUT
+
+      - name: Create target matrix with images
+        id: target-matrix
+        run: |
+          # Get all group targets and their corresponding images
+          bake_data=$(docker buildx bake --print all)
+          
+          matrix=$(echo "$bake_data" | jq -c '
+            .group.all.targets as $targets |
+            .target | to_entries | 
+            map(select(.key as $k | $targets | contains([$k]))) |
+            map({
+              target: .key,
+              image: (.value.tags[0] // "ghcr.io/till0196/\(.key)" | split(":")[0])
+            })
+          ')
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+      - name: Show outputs
+        run: |
+          echo "Targets: ${{ steps.targets.outputs.targets }}"
+          echo "Target Matrix: ${{ steps.target-matrix.outputs.matrix }}"
+
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        target-info: ${{ fromJson(needs.prepare.outputs.target-matrix) }}
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "TARGET_NAME=${{ matrix.target-info.target }}" >> $GITHUB_ENV
+          echo "REGISTRY_IMAGE=$(echo ${{ matrix.target-info.image }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push by digest
+        uses: docker/bake-action@v6
+        id: bake
+        with:
+          files: ./docker-bake.hcl
+          targets: ${{ env.TARGET_NAME }}
+          set: |
+            *.platform=${{ matrix.platform }}
+            *.output=type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+            *.cache-from=type=gha,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
+            *.cache-to=type=gha,mode=max,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.bake.outputs.digest }}"
+          touch "/tmp/digests/${{ env.TARGET_NAME }}-${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: [prepare, build]
+    strategy:
+      matrix:
+        target-info: ${{ fromJson(needs.prepare.outputs.target-matrix) }}
+    steps:
+      - name: Prepare
+        run: |
+          echo "TARGET_NAME=${{ matrix.target-info.target }}" >> $GITHUB_ENV
+          echo "REGISTRY_IMAGE=$(echo ${{ matrix.target-info.image }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-${{ env.TARGET_NAME }}-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          # Get tags from docker-bake.hcl for this target
+          bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
+          tags=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[]' | tr '\n' ' ')
+          
+          docker buildx imagetools create \
+            $(echo "$tags" | sed 's/[^ ]* */-t &/g') \
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
+
+      - name: Inspect image
+        run: |
+          # Get the first tag for inspection
+          bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
+          first_tag=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[0]')
+          docker buildx imagetools inspect "$first_tag"
