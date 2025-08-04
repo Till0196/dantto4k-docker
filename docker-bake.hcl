@@ -78,9 +78,7 @@ target "dantto4k" {
     DANTTO4K_VERSION = DANTTO4K_VERSIONS
   }
   dockerfile = "dantto4k/Dockerfile"
-  contexts = {
-    src = "./dantto4k"
-  }
+  context = "./dantto4k"
   target = "release"
   tags   = [
     "${DANTTO4K_IMAGE}:${DANTTO4K_VERSION}",
@@ -150,7 +148,7 @@ target "depgstation-base" {
 }
 
 target "depgstation" {
-  dockerfile = "dmirakurun/Dockerfile"
+  dockerfile = "depgstation/Dockerfile"
   contexts = {
     src = "./depgstation"
     "ghcr.io/till0196/depgstation:base" = BUILD_DEPGSTATION_BASE ? "target:depgstation-base" : "docker-image://${DEPGSTATION_IMAGE}:base"
