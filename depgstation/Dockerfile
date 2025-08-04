@@ -28,7 +28,7 @@ RUN apt-get update && \
 # Install architecture-specific packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        jellyfin-ffmpeg && \
+        jellyfin-ffmpeg7 && \
     # Install Intel/AMD specific drivers for amd64/x86_64
     if [ "$TARGETARCH" = "amd64" ]; then \
         apt-get install -y --no-install-recommends \

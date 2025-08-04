@@ -77,7 +77,7 @@ target "dantto4k" {
   matrix = {
     DANTTO4K_VERSION = DANTTO4K_VERSIONS
   }
-  dockerfile = "dantto4k/Dockerfile"
+  dockerfile = "Dockerfile"
   context = "./dantto4k"
   target = "release"
   tags   = [
@@ -104,9 +104,9 @@ target "dmirakurun-base" {
 
 # DMirakurun without dantto4k
 target "dmirakurun-without-dantto4k" {
-  dockerfile = "dmirakurun/Dockerfile"
+  dockerfile = "Dockerfile"
+  context = "./dmirakurun"
   contexts = {
-    src = "./dmirakurun"
     "ghcr.io/till0196/dmirakurun:base" = BUILD_DMIRAKURUN_BASE ? "target:dmirakurun-base" : "docker-image://${DMIRAKURUN_IMAGE}:base"
   }
   target = "without-dnatto4k"
@@ -123,9 +123,9 @@ target "dmirakurun-with-dantto4k" {
   matrix = {
     DANTTO4K_VERSION = DANTTO4K_VERSIONS
   }
-  dockerfile = "dmirakurun/Dockerfile"
+  dockerfile = "Dockerfile"
+  context = "./dmirakurun"
   contexts = {
-    src = "./dmirakurun"
     "ghcr.io/till0196/dmirakurun:base" = BUILD_DMIRAKURUN_BASE ? "target:dmirakurun-base" : "docker-image://${DMIRAKURUN_IMAGE}:base"
     "ghcr.io/till0196/dantto4k" = BUILD_DANTTO4K ? "target:dantto4k-${replace(DANTTO4K_VERSION, ".", "-")}" : "docker-image://${DANTTO4K_IMAGE}:${DANTTO4K_VERSION}"
   }
@@ -148,9 +148,9 @@ target "depgstation-base" {
 }
 
 target "depgstation" {
-  dockerfile = "depgstation/Dockerfile"
+  dockerfile = "Dockerfile"
+  context = "./depgstation"
   contexts = {
-    src = "./depgstation"
     "ghcr.io/till0196/depgstation:base" = BUILD_DEPGSTATION_BASE ? "target:depgstation-base" : "docker-image://${DEPGSTATION_IMAGE}:base"
   }
   tags = [
