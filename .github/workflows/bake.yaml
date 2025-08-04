@@ -90,12 +90,13 @@ jobs:
         uses: docker/bake-action@v6
         id: bake
         with:
+          source: "."
           files: ./docker-bake.hcl
           targets: ${{ env.TARGET_NAME }}
-          push: true
           set: |
             *.platform=${{ matrix.platform }}
-            *.output=type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+            *.tags=${{ env.REGISTRY_IMAGE }}
+            *.output=type=image,push-by-digest=true,name-canonical=true,push=true
             *.cache-from=type=gha,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
             *.cache-to=type=gha,mode=max,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
 

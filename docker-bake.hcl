@@ -156,8 +156,8 @@ target "depgstation" {
     "ghcr.io/till0196/depgstation:base" = BUILD_DEPGSTATION_BASE ? "target:depgstation-base" : "docker-image://${DEPGSTATION_IMAGE}:base"
   }
   tags = [
-    "${DMIRAKURUN_IMAGE}:${BUILD_TIMESTAMP}",
-    "${DMIRAKURUN_IMAGE}:latest"
+    "${DEPGSTATION_IMAGE}:${BUILD_TIMESTAMP}",
+    "${DEPGSTATION_IMAGE}:latest"
   ]
 }
 
