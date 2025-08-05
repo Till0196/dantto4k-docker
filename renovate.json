@@ -89,7 +89,8 @@
       "matchStrings": [
         "# renovate: datasource=github-releases depName=(?<depName>\\S+)\\s*\\n\\s*variable \"[^\"]+\" {\\s*\\n\\s*default = \"(?<currentValue>[^\"]+)\""
       ],
-      "datasourceTemplate": "github-releases"
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
     },
     {
       "customType": "regex",
@@ -99,7 +100,8 @@
         "# renovate: datasource=github-releases depName=tsduck/tsduck\\s*\\n\\s*ARG TSDUCK_VERSION=(?<currentValue>\\S+)"
       ],
       "depNameTemplate": "tsduck/tsduck",
-      "datasourceTemplate": "github-releases"
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
     },
     {
       "customType": "regex",
@@ -109,7 +111,8 @@
         "# renovate: datasource=github-releases depName=nekohkr/dantto4k\\s*\\n\\s*ARG DANTTO4K_VERSION=(?<currentValue>\\S+)"
       ],
       "depNameTemplate": "nekohkr/dantto4k",
-      "datasourceTemplate": "github-releases"
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
     }
   ]
 }
