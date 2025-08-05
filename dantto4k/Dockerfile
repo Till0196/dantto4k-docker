@@ -18,6 +18,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM base AS tsduck-build
+# renovate: datasource=github-releases depName=tsduck/tsduck
 ARG TSDUCK_VERSION=3.41-4299
 
 WORKDIR /app
@@ -52,6 +53,7 @@ RUN mkdir tsduck && \
         install
 
 FROM base AS dantto4k-build
+# renovate: datasource=github-releases depName=nekohkr/dantto4k
 ARG DANTTO4K_VERSION=1.0.0-rc9
 
 WORKDIR /app

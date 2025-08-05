@@ -1,0 +1,148 @@
+name: Update Dantto4k Versions
+
+on:
+  schedule:
+    # Run every Monday at 08:30 JST (23:30 UTC Sunday) - before Renovate
+    - cron: '30 23 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Update dantto4k versions to latest 3
+        id: update-versions
+        run: |
+          # Get latest 3 releases from GitHub API
+          echo "Fetching latest releases from nekohkr/dantto4k..."
+          latest_releases=$(curl -s "https://api.github.com/repos/nekohkr/dantto4k/releases" | \
+            jq -r '.[].tag_name' | \
+            grep -E '^v' | \
+            sed 's/^v//' | \
+            head -3)
+          
+          echo "Latest 3 releases:"
+          echo "$latest_releases"
+          
+          # Convert to JSON array format
+          versions_array=$(echo "$latest_releases" | jq -R -s 'split("\n") | map(select(length > 0)) | map("\"" + . + "\"")')
+          echo "Versions array: $versions_array"
+          
+          # Get current versions from docker-bake.hcl
+          current_versions=$(grep -A 10 'DANTTO4K_VERSIONS' docker-bake.hcl | \
+            grep -E '^\s*"[^"]*"' | \
+            sed 's/.*"\([^"]*\)".*/\1/' | \
+            sort -u)
+          
+          echo "Current versions in docker-bake.hcl:"
+          echo "$current_versions"
+          
+          # Check if update is needed
+          new_versions_list=$(echo "$latest_releases" | tr '\n' ' ' | sed 's/ $//')
+          current_versions_list=$(echo "$current_versions" | tr '\n' ' ' | sed 's/ $//')
+          
+          if [ "$new_versions_list" = "$current_versions_list" ]; then
+            echo "No update needed"
+            echo "needs-update=false" >> $GITHUB_OUTPUT
+          else
+            echo "Update needed"
+            echo "needs-update=true" >> $GITHUB_OUTPUT
+            
+            # Create new docker-bake.hcl content
+            # Backup original file
+            cp docker-bake.hcl docker-bake.hcl.backup
+            
+            # Create new versions section
+            new_versions_section=$(cat << EOF
+          variable "DANTTO4K_VERSIONS" {
+            default = [
+          EOF
+          )
+            
+            # Add each version to the section
+            while IFS= read -r version; do
+              if [ -n "$version" ]; then
+                new_versions_section="$new_versions_section
+              \"$version\","
+              fi
+            done <<< "$latest_releases"
+            
+            # Close the section
+            new_versions_section="$new_versions_section
+            ]
+            type    = list(string)
+          }"
+            
+            echo "New versions section:"
+            echo "$new_versions_section"
+            
+            # Replace the DANTTO4K_VERSIONS section in docker-bake.hcl
+            # Find start and end lines
+            start_line=$(grep -n "variable \"DANTTO4K_VERSIONS\"" docker-bake.hcl | cut -d: -f1)
+            end_line=$(sed -n "${start_line},\$p" docker-bake.hcl | grep -n "^}" | head -1 | cut -d: -f1)
+            end_line=$((start_line + end_line - 1))
+            
+            # Create new file
+            head -n $((start_line - 1)) docker-bake.hcl > temp_file
+            echo "# renovate: datasource=github-releases depName=nekohkr/dantto4k" >> temp_file
+            echo "$new_versions_section" >> temp_file
+            tail -n +$((end_line + 1)) docker-bake.hcl >> temp_file
+            
+            # Replace original file
+            mv temp_file docker-bake.hcl
+            
+            echo "Updated docker-bake.hcl with latest 3 versions"
+          fi
+
+      - name: Create Pull Request
+        if: steps.update-versions.outputs.needs-update == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore: update dantto4k versions to latest 3 releases
+            
+            Updated DANTTO4K_VERSIONS array to contain only the latest 3 releases
+          title: "chore: update dantto4k versions to latest 3 releases"
+          body: |
+            ## Dantto4k Versions Update
+            
+            This PR updates the `DANTTO4K_VERSIONS` array to contain only the latest 3 releases from the nekohkr/dantto4k repository.
+            
+            ### Changes Made
+            
+            - Updated `DANTTO4K_VERSIONS` in `docker-bake.hcl` to contain the latest 3 versions
+            - Maintains chronological order (newest first)
+            
+            ### Why This Change
+            
+            - Keeps the build matrix manageable by limiting to 3 most recent versions
+            - Automatically removes older versions that are no longer needed
+            - Ensures we always test against the most current releases
+            
+            ### Testing
+            
+            Please verify that the docker-bake configuration is valid:
+            ```bash
+            docker buildx bake --print all
+            ```
+            
+            ---
+            
+            🤖 This PR was created automatically by the dantto4k versions update workflow.
+          branch: update-dantto4k-versions
+          delete-branch: true
+          labels: |
+            dantto4k
+            version-update
+            automated-pr

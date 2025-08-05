@@ -1,0 +1,69 @@
+name: Renovate
+
+on:
+  schedule:
+    # Run every Monday at 09:00 JST (00:00 UTC)
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: false
+        default: 'info'
+        type: choice
+        options:
+          - info
+          - debug
+          - trace
+      dryRun:
+        description: 'Dry run mode'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  repository-projects: write
+  actions: read
+  checks: read
+  statuses: read
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate renovate config
+        run: |
+          # Install renovate CLI for validation
+          npm install -g renovate
+          # Validate configuration
+          renovate-config-validator
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v39.2.2
+        with:
+          configurationFile: renovate.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun == true }}
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_GIT_AUTHOR: 'Renovate Bot <bot@renovateapp.com>'
+          RENOVATE_PLATFORM: 'github'
+          RENOVATE_REQUIRE_CONFIG: 'required'
+
+      - name: Renovate summary
+        if: always()
+        run: |
+          echo "## Renovate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Log Level: ${{ inputs.logLevel || 'info' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry Run: ${{ inputs.dryRun || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY

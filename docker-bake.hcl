@@ -1,3 +1,4 @@
+# renovate: datasource=github-releases depName=nekohkr/dantto4k
 variable "DANTTO4K_VERSIONS" {
   default = [
     "1.0.0-rc9",
@@ -6,11 +7,13 @@ variable "DANTTO4K_VERSIONS" {
   type    = list(string)
 }
 
+# renovate: datasource=github-releases depName=nekohkr/dantto4k
 variable "DANTTO4K_LATEST_VERSION" {
   default = "1.0.0-rc8"
   type    = string
 }
 
+# renovate: datasource=github-releases depName=tsduck/tsduck
 variable "TSDUCK_VERSION" {
   default = "3.41-4299"
   type    = string

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Asia/Tokyo",
+  "schedule": ["before 9am on monday"],
+  "labels": ["dependencies"],
+  "assignees": ["@Till0196"],
+  "reviewers": ["@Till0196"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "semanticCommits": "enabled",
+  "commitMessagePrefix": "chore:",
+  "branchPrefix": "renovate/",
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "platformAutomerge": false,
+  "automerge": false,
+  "major": {"automerge": false},
+  "minor": {"automerge": false},
+  "patch": {"automerge": false},
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 9am on monday"]
+  },
+  "packageRules": [
+    {
+      "description": "GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "labels": ["github-actions"],
+      "schedule": ["before 9am on monday"]
+    },
+    {
+      "description": "Docker images",
+      "matchManagers": ["dockerfile"],
+      "labels": ["docker"],
+      "schedule": ["before 9am on monday"]
+    },
+    {
+      "description": "Custom dantto4k and tsduck versions",
+      "matchPackageNames": ["nekohkr/dantto4k", "tsduck/tsduck"],
+      "labels": ["version-update"],
+      "schedule": ["before 9am on monday"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update versions in docker-bake.hcl",
+      "fileMatch": ["^docker-bake\\.hcl$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[A-Z_]+.*?[\"'](?<currentValue>[^\"']+)[\"']"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "Update TSDuck ARG versions in Dockerfiles",
+      "fileMatch": ["(^|/)Dockerfile[^/]*$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s*\\n\\s*ARG TSDUCK_VERSION=(?<currentValue>\\S+)"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "Update Dantto4k ARG versions in Dockerfiles",
+      "fileMatch": ["(^|/)Dockerfile[^/]*$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s*\\n\\s*ARG DANTTO4K_VERSION=(?<currentValue>\\S+)"
+      ]
+    }
+  ]
+}
