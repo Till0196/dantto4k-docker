@@ -65,7 +65,7 @@ jobs:
           
           matrix=$(echo "$bake_data" | jq -c --argjson bases "$base_targets" '
             .target | to_entries | 
-            map(select(.key as $k | $bases | contains([$k]))) |
+            map(select(.key as $k | $bases | index($k) != null)) |
             map({
               target: .key,
               image: (.value.tags[0] // "ghcr.io/till0196/\(.key)" | split(":")[0])
@@ -82,7 +82,7 @@ jobs:
           
           matrix=$(echo "$bake_data" | jq -c --argjson deps "$dependent_targets" '
             .target | to_entries | 
-            map(select(.key as $k | $deps | contains([$k]))) |
+            map(select(.key as $k | $deps | index($k) != null)) |
             map({
               target: .key,
               image: (.value.tags[0] // "ghcr.io/till0196/\(.key)" | split(":")[0])
@@ -149,7 +149,17 @@ jobs:
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.bake.outputs.digest }}"
-          touch "/tmp/digests/${{ env.TARGET_NAME }}-${digest#sha256:}"
+          echo "DEBUG: Raw digest output: '$digest'"
+          echo "DEBUG: All bake outputs:"
+          echo "${{ toJSON(steps.bake.outputs) }}"
+          
+          if [ -n "$digest" ]; then
+            echo "Creating digest file with: ${digest#sha256:}"
+            touch "/tmp/digests/${{ env.TARGET_NAME }}-${digest#sha256:}"
+          else
+            echo "ERROR: No digest output from bake step"
+            exit 1
+          fi
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
@@ -212,7 +222,17 @@ jobs:
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.bake.outputs.digest }}"
-          touch "/tmp/digests/${{ env.TARGET_NAME }}-${digest#sha256:}"
+          echo "DEBUG: Raw digest output: '$digest'"
+          echo "DEBUG: All bake outputs:"
+          echo "${{ toJSON(steps.bake.outputs) }}"
+          
+          if [ -n "$digest" ]; then
+            echo "Creating digest file with: ${digest#sha256:}"
+            touch "/tmp/digests/${{ env.TARGET_NAME }}-${digest#sha256:}"
+          else
+            echo "ERROR: No digest output from bake step"
+            exit 1
+          fi
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
