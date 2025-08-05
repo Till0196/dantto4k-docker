@@ -312,14 +312,25 @@ jobs:
           # Check if digest files exist
           if ls ${{ env.TARGET_NAME }}-* 1> /dev/null 2>&1; then
             # Extract digest hashes from filenames and create proper digest references
+            # Only match files that start with TARGET_NAME followed by a dash and then a hex digest
             digest_refs=""
             for file in ${{ env.TARGET_NAME }}-*; do
-              digest_hash="${file#${{ env.TARGET_NAME }}-}"
-              digest_refs="$digest_refs ${{ env.REGISTRY_IMAGE }}@sha256:$digest_hash"
+              # Check if the filename matches exactly: TARGET_NAME-HEXDIGEST (64 hex chars)
+              if [[ "$file" =~ ^${{ env.TARGET_NAME }}-[a-f0-9]{64}$ ]]; then
+                digest_hash="${file#${{ env.TARGET_NAME }}-}"
+                digest_refs="$digest_refs ${{ env.REGISTRY_IMAGE }}@sha256:$digest_hash"
+              fi
             done
             
-            echo "DEBUG: Digest references: $digest_refs"
-            docker buildx imagetools create $tag_args $digest_refs
+            if [ -n "$digest_refs" ]; then
+              echo "DEBUG: Digest references: $digest_refs"
+              docker buildx imagetools create $tag_args $digest_refs
+            else
+              echo "ERROR: No valid digest files found for ${{ env.TARGET_NAME }}"
+              echo "DEBUG: Files found but not matching pattern:"
+              ls -la ${{ env.TARGET_NAME }}-*
+              exit 1
+            fi
           else
             echo "ERROR: No digest files found for ${{ env.TARGET_NAME }}"
             exit 1
@@ -387,14 +398,25 @@ jobs:
           # Check if digest files exist
           if ls ${{ env.TARGET_NAME }}-* 1> /dev/null 2>&1; then
             # Extract digest hashes from filenames and create proper digest references
+            # Only match files that start with TARGET_NAME followed by a dash and then a hex digest
             digest_refs=""
             for file in ${{ env.TARGET_NAME }}-*; do
-              digest_hash="${file#${{ env.TARGET_NAME }}-}"
-              digest_refs="$digest_refs ${{ env.REGISTRY_IMAGE }}@sha256:$digest_hash"
+              # Check if the filename matches exactly: TARGET_NAME-HEXDIGEST (64 hex chars)
+              if [[ "$file" =~ ^${{ env.TARGET_NAME }}-[a-f0-9]{64}$ ]]; then
+                digest_hash="${file#${{ env.TARGET_NAME }}-}"
+                digest_refs="$digest_refs ${{ env.REGISTRY_IMAGE }}@sha256:$digest_hash"
+              fi
             done
             
-            echo "DEBUG: Digest references: $digest_refs"
-            docker buildx imagetools create $tag_args $digest_refs
+            if [ -n "$digest_refs" ]; then
+              echo "DEBUG: Digest references: $digest_refs"
+              docker buildx imagetools create $tag_args $digest_refs
+            else
+              echo "ERROR: No valid digest files found for ${{ env.TARGET_NAME }}"
+              echo "DEBUG: Files found but not matching pattern:"
+              ls -la ${{ env.TARGET_NAME }}-*
+              exit 1
+            fi
           else
             echo "ERROR: No digest files found for ${{ env.TARGET_NAME }}"
             exit 1
