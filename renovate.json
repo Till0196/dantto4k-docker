@@ -65,7 +65,10 @@
       ]
     },
     {
-      "description": "Custom dantto4k and tsduck versions",
+      "description": "Custom dantto4k and tsduck versions from custom managers",
+      "matchManagers": [
+        "regex"
+      ],
       "matchPackageNames": [
         "nekohkr/dantto4k",
         "tsduck/tsduck"
@@ -79,6 +82,15 @@
     }
   ],
   "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update versions in docker-bake.hcl",
+      "managerFilePatterns": ["docker-bake.hcl"],
+      "matchStrings": [
+        "# renovate: datasource=github-releases depName=(?<depName>\\S+)\\s*\\n\\s*variable \"[^\"]+\" {\\s*\\n\\s*default = \"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases"
+    },
     {
       "customType": "regex",
       "description": "Update TSDUCK_VERSION in Dockerfile",
