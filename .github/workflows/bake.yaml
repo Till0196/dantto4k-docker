@@ -32,6 +32,12 @@ jobs:
           # Get all targets and analyze their contexts for target: dependencies
           bake_data=$(docker buildx bake --print all)
           
+          # Debug: Check depgstation specifically
+          echo "DEBUG: depgstation contexts:"
+          echo "$bake_data" | jq -r '.target.depgstation.contexts // {}'
+          echo "DEBUG: depgstation has target deps:"
+          echo "$bake_data" | jq -r '.target.depgstation | (.contexts // {} | to_entries | map(.value | startswith("target:")) | any)'
+          
           # Find base targets (no target: dependencies in contexts)
           base_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
@@ -251,9 +257,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create manifest list and push
-        working-directory: /tmp/digests
         run: |
-          # Get tags from the original bake definition
+          # Get tags from the original bake definition (from repo root)
+          cd $GITHUB_WORKSPACE
           bake_data=$(docker buildx bake --print all)
           tags=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[]')
           
@@ -263,6 +269,8 @@ jobs:
             tag_args="$tag_args -t $tag"
           done <<< "$tags"
           
+          # Change to digests directory for imagetools command
+          cd /tmp/digests
           docker buildx imagetools create \
             $tag_args \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
@@ -307,9 +315,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create manifest list and push
-        working-directory: /tmp/digests
         run: |
-          # Get tags from the original bake definition
+          # Get tags from the original bake definition (from repo root)
+          cd $GITHUB_WORKSPACE
           bake_data=$(docker buildx bake --print all)
           tags=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[]')
           
@@ -319,6 +327,8 @@ jobs:
             tag_args="$tag_args -t $tag"
           done <<< "$tags"
           
+          # Change to digests directory for imagetools command
+          cd /tmp/digests
           docker buildx imagetools create \
             $tag_args \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
