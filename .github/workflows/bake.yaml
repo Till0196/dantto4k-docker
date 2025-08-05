@@ -59,10 +59,6 @@ jobs:
           bake_data=$(docker buildx bake --print all)
           base_targets='${{ steps.analyze-deps.outputs.base-targets }}'
           
-          echo "DEBUG: Base targets from analyze step: $base_targets"
-          echo "DEBUG: Checking which targets are in base list:"
-          echo "$bake_data" | jq -r --argjson bases "$base_targets" '.target | keys[] as $k | "\($k): \($bases | contains([$k]))"'
-          
           matrix=$(echo "$bake_data" | jq -c --argjson bases "$base_targets" '
             .target | to_entries | 
             map(select(.key as $k | $bases | index($k) != null)) |
@@ -148,16 +144,20 @@ jobs:
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
-          digest="${{ steps.bake.outputs.digest }}"
-          echo "DEBUG: Raw digest output: '$digest'"
-          echo "DEBUG: All bake outputs:"
-          echo "${{ toJSON(steps.bake.outputs) }}"
+          # Extract digest from metadata
+          metadata='${{ toJSON(steps.bake.outputs.metadata) }}'
+          digest=$(echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
           
-          if [ -n "$digest" ]; then
-            echo "Creating digest file with: ${digest#sha256:}"
-            touch "/tmp/digests/${{ env.TARGET_NAME }}-${digest#sha256:}"
+          echo "DEBUG: Extracted digest: '$digest'"
+          
+          if [ -n "$digest" ] && [ "$digest" != "null" ]; then
+            digest_hash="${digest#sha256:}"
+            echo "Creating digest file: ${{ env.TARGET_NAME }}-$digest_hash"
+            touch "/tmp/digests/${{ env.TARGET_NAME }}-$digest_hash"
           else
-            echo "ERROR: No digest output from bake step"
+            echo "ERROR: Could not extract digest from metadata"
+            echo "DEBUG: Available metadata keys:"
+            echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"] | keys[]' 2>/dev/null || echo "No metadata found"
             exit 1
           fi
 
@@ -221,16 +221,20 @@ jobs:
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
-          digest="${{ steps.bake.outputs.digest }}"
-          echo "DEBUG: Raw digest output: '$digest'"
-          echo "DEBUG: All bake outputs:"
-          echo "${{ toJSON(steps.bake.outputs) }}"
+          # Extract digest from metadata
+          metadata='${{ toJSON(steps.bake.outputs.metadata) }}'
+          digest=$(echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
           
-          if [ -n "$digest" ]; then
-            echo "Creating digest file with: ${digest#sha256:}"
-            touch "/tmp/digests/${{ env.TARGET_NAME }}-${digest#sha256:}"
+          echo "DEBUG: Extracted digest: '$digest'"
+          
+          if [ -n "$digest" ] && [ "$digest" != "null" ]; then
+            digest_hash="${digest#sha256:}"
+            echo "Creating digest file: ${{ env.TARGET_NAME }}-$digest_hash"
+            touch "/tmp/digests/${{ env.TARGET_NAME }}-$digest_hash"
           else
-            echo "ERROR: No digest output from bake step"
+            echo "ERROR: Could not extract digest from metadata"
+            echo "DEBUG: Available metadata keys:"
+            echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"] | keys[]' 2>/dev/null || echo "No metadata found"
             exit 1
           fi
 
