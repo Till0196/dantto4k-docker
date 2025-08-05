@@ -145,10 +145,8 @@ jobs:
         run: |
           mkdir -p /tmp/digests
           
-          # Write metadata to file to avoid variable size limits
-          cat > /tmp/metadata.json << 'EOF'
-          ${{ toJSON(steps.bake.outputs.metadata) }}
-          EOF
+          # Write raw metadata to file without toJSON wrapper
+          echo '${{ steps.bake.outputs.metadata }}' > /tmp/metadata.json
           
           # Extract digest from metadata file
           digest=$(cat /tmp/metadata.json | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
@@ -161,10 +159,10 @@ jobs:
             touch "/tmp/digests/${{ env.TARGET_NAME }}-$digest_hash"
           else
             echo "ERROR: Could not extract digest from metadata"
-            echo "DEBUG: Checking metadata file:"
-            head -20 /tmp/metadata.json
-            echo "DEBUG: Available target keys:"
-            cat /tmp/metadata.json | jq -r 'keys[]' 2>/dev/null || echo "No valid JSON"
+            echo "DEBUG: Checking if metadata file is valid JSON:"
+            jq empty /tmp/metadata.json && echo "Valid JSON" || echo "Invalid JSON"
+            echo "DEBUG: Raw metadata content (first 500 chars):"
+            head -c 500 /tmp/metadata.json
             exit 1
           fi
 
@@ -229,10 +227,8 @@ jobs:
         run: |
           mkdir -p /tmp/digests
           
-          # Write metadata to file to avoid variable size limits
-          cat > /tmp/metadata.json << 'EOF'
-          ${{ toJSON(steps.bake.outputs.metadata) }}
-          EOF
+          # Write raw metadata to file without toJSON wrapper
+          echo '${{ steps.bake.outputs.metadata }}' > /tmp/metadata.json
           
           # Extract digest from metadata file
           digest=$(cat /tmp/metadata.json | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
@@ -245,10 +241,10 @@ jobs:
             touch "/tmp/digests/${{ env.TARGET_NAME }}-$digest_hash"
           else
             echo "ERROR: Could not extract digest from metadata"
-            echo "DEBUG: Checking metadata file:"
-            head -20 /tmp/metadata.json
-            echo "DEBUG: Available target keys:"
-            cat /tmp/metadata.json | jq -r 'keys[]' 2>/dev/null || echo "No valid JSON"
+            echo "DEBUG: Checking if metadata file is valid JSON:"
+            jq empty /tmp/metadata.json && echo "Valid JSON" || echo "Invalid JSON"
+            echo "DEBUG: Raw metadata content (first 500 chars):"
+            head -c 500 /tmp/metadata.json
             exit 1
           fi
 
