@@ -221,7 +221,8 @@ jobs:
             *.output=type=image,push-by-digest=true,name-canonical=true,push=true
             *.cache-from=type=gha,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
             *.cache-to=type=gha,mode=max,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
-            BUILD_BASE_IMAGE=false
+        env:
+          BUILD_BASE_IMAGE: false
 
       - name: Export digest
         run: |
