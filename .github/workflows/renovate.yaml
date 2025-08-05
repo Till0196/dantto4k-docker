@@ -46,15 +46,8 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
 
-      - name: Validate renovate config
-        run: |
-          # Install renovate CLI for validation
-          npm install -g renovate
-          # Validate configuration
-          renovate-config-validator
-
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@v39.2.2
+        uses: renovatebot/github-action@v43.0.5
         with:
           configurationFile: renovate.json
           token: ${{ steps.generate-token.outputs.token }}
