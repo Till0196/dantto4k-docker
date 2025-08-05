@@ -32,12 +32,6 @@ jobs:
           # Get all targets and analyze their contexts for target: dependencies
           bake_data=$(docker buildx bake --print all)
           
-          # Debug: Check depgstation specifically
-          echo "DEBUG: depgstation contexts:"
-          echo "$bake_data" | jq -r '.target.depgstation.contexts // {}'
-          echo "DEBUG: depgstation has target deps:"
-          echo "$bake_data" | jq -r '.target.depgstation | (.contexts // {} | to_entries | map(.value | startswith("target:")) | any)'
-          
           # Find base targets (no target: dependencies in contexts)
           base_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
@@ -64,6 +58,10 @@ jobs:
           # Create matrix for base targets
           bake_data=$(docker buildx bake --print all)
           base_targets='${{ steps.analyze-deps.outputs.base-targets }}'
+          
+          echo "DEBUG: Base targets from analyze step: $base_targets"
+          echo "DEBUG: Checking which targets are in base list:"
+          echo "$bake_data" | jq -r --argjson bases "$base_targets" '.target | keys[] as $k | "\($k): \($bases | contains([$k]))"'
           
           matrix=$(echo "$bake_data" | jq -c --argjson bases "$base_targets" '
             .target | to_entries | 
@@ -271,9 +269,20 @@ jobs:
           
           # Change to digests directory for imagetools command
           cd /tmp/digests
-          docker buildx imagetools create \
-            $tag_args \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
+          
+          # Debug: List available digest files
+          echo "DEBUG: Available digest files:"
+          ls -la ${{ env.TARGET_NAME }}-* 2>/dev/null || echo "No digest files found for ${{ env.TARGET_NAME }}"
+          
+          # Check if digest files exist
+          if ls ${{ env.TARGET_NAME }}-* 1> /dev/null 2>&1; then
+            docker buildx imagetools create \
+              $tag_args \
+              $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
+          else
+            echo "ERROR: No digest files found for ${{ env.TARGET_NAME }}"
+            exit 1
+          fi
 
       - name: Inspect image
         run: |
@@ -329,9 +338,20 @@ jobs:
           
           # Change to digests directory for imagetools command
           cd /tmp/digests
-          docker buildx imagetools create \
-            $tag_args \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
+          
+          # Debug: List available digest files
+          echo "DEBUG: Available digest files:"
+          ls -la ${{ env.TARGET_NAME }}-* 2>/dev/null || echo "No digest files found for ${{ env.TARGET_NAME }}"
+          
+          # Check if digest files exist
+          if ls ${{ env.TARGET_NAME }}-* 1> /dev/null 2>&1; then
+            docker buildx imagetools create \
+              $tag_args \
+              $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
+          else
+            echo "ERROR: No digest files found for ${{ env.TARGET_NAME }}"
+            exit 1
+          fi
 
       - name: Inspect image
         run: |
