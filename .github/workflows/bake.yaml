@@ -36,7 +36,7 @@ jobs:
           base_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
             map(select(
-              (.value.contexts // {} | to_entries | map(.value | contains("target:")) | any) == false
+              (.value.contexts // {} | to_entries | map(.value | test("target:")) | any) == false
             )) | 
             map(.key) | @json
           ')
@@ -46,7 +46,7 @@ jobs:
           dependent_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
             map(select(
-              (.value.contexts // {} | to_entries | map(.value | contains("target:")) | any) == true
+              (.value.contexts // {} | to_entries | map(.value | test("target:")) | any) == true
             )) | 
             map(.key) | @json
           ')
