@@ -144,9 +144,14 @@ jobs:
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
-          # Extract digest from metadata
-          metadata='${{ toJSON(steps.bake.outputs.metadata) }}'
-          digest=$(echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
+          
+          # Write metadata to file to avoid variable size limits
+          cat > /tmp/metadata.json << 'EOF'
+          ${{ toJSON(steps.bake.outputs.metadata) }}
+          EOF
+          
+          # Extract digest from metadata file
+          digest=$(cat /tmp/metadata.json | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
           
           echo "DEBUG: Extracted digest: '$digest'"
           
@@ -156,8 +161,10 @@ jobs:
             touch "/tmp/digests/${{ env.TARGET_NAME }}-$digest_hash"
           else
             echo "ERROR: Could not extract digest from metadata"
-            echo "DEBUG: Available metadata keys:"
-            echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"] | keys[]' 2>/dev/null || echo "No metadata found"
+            echo "DEBUG: Checking metadata file:"
+            head -20 /tmp/metadata.json
+            echo "DEBUG: Available target keys:"
+            cat /tmp/metadata.json | jq -r 'keys[]' 2>/dev/null || echo "No valid JSON"
             exit 1
           fi
 
@@ -221,9 +228,14 @@ jobs:
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
-          # Extract digest from metadata
-          metadata='${{ toJSON(steps.bake.outputs.metadata) }}'
-          digest=$(echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
+          
+          # Write metadata to file to avoid variable size limits
+          cat > /tmp/metadata.json << 'EOF'
+          ${{ toJSON(steps.bake.outputs.metadata) }}
+          EOF
+          
+          # Extract digest from metadata file
+          digest=$(cat /tmp/metadata.json | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
           
           echo "DEBUG: Extracted digest: '$digest'"
           
@@ -233,8 +245,10 @@ jobs:
             touch "/tmp/digests/${{ env.TARGET_NAME }}-$digest_hash"
           else
             echo "ERROR: Could not extract digest from metadata"
-            echo "DEBUG: Available metadata keys:"
-            echo "$metadata" | jq -r '.["${{ env.TARGET_NAME }}"] | keys[]' 2>/dev/null || echo "No metadata found"
+            echo "DEBUG: Checking metadata file:"
+            head -20 /tmp/metadata.json
+            echo "DEBUG: Available target keys:"
+            cat /tmp/metadata.json | jq -r 'keys[]' 2>/dev/null || echo "No valid JSON"
             exit 1
           fi
 
