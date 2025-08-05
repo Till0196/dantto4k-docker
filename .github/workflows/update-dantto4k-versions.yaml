@@ -169,7 +169,7 @@ jobs:
               owner,
               repo,
               issue_number: pr.number,
-              labels: ['dantto4k', 'version-update', 'automated-pr']
+              labels: ['version-update']
             });
             
             console.log(`Created PR #${pr.number}: ${pr.html_url}`);
