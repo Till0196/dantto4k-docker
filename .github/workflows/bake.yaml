@@ -36,7 +36,7 @@ jobs:
           base_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
             map(select(
-              (.value.contexts // {} | to_entries | map(.value | test("target:")) | any) == false
+              (.value.contexts // {} | to_entries | map(.value | startswith("target:")) | any) == false
             )) | 
             map(.key) | @json
           ')
@@ -46,7 +46,7 @@ jobs:
           dependent_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
             map(select(
-              (.value.contexts // {} | to_entries | map(.value | test("target:")) | any) == true
+              (.value.contexts // {} | to_entries | map(.value | startswith("target:")) | any) == true
             )) | 
             map(.key) | @json
           ')
@@ -253,18 +253,24 @@ jobs:
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
-          # Get tags from docker-bake.hcl for this target
-          bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
-          tags=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[]' | tr '\n' ' ')
+          # Get tags from the original bake definition
+          bake_data=$(docker buildx bake --print all)
+          tags=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[]')
+          
+          # Create tag arguments for imagetools
+          tag_args=""
+          while IFS= read -r tag; do
+            tag_args="$tag_args -t $tag"
+          done <<< "$tags"
           
           docker buildx imagetools create \
-            $(echo "$tags" | sed 's/[^ ]* */-t &/g') \
+            $tag_args \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
 
       - name: Inspect image
         run: |
           # Get the first tag for inspection
-          bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
+          bake_data=$(docker buildx bake --print all)
           first_tag=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[0]')
           docker buildx imagetools inspect "$first_tag"
 
@@ -303,17 +309,23 @@ jobs:
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
-          # Get tags from docker-bake.hcl for this target
-          bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
-          tags=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[]' | tr '\n' ' ')
+          # Get tags from the original bake definition
+          bake_data=$(docker buildx bake --print all)
+          tags=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[]')
+          
+          # Create tag arguments for imagetools
+          tag_args=""
+          while IFS= read -r tag; do
+            tag_args="$tag_args -t $tag"
+          done <<< "$tags"
           
           docker buildx imagetools create \
-            $(echo "$tags" | sed 's/[^ ]* */-t &/g') \
+            $tag_args \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
 
       - name: Inspect image
         run: |
           # Get the first tag for inspection
-          bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
+          bake_data=$(docker buildx bake --print all)
           first_tag=$(echo "$bake_data" | jq -r '.target."${{ env.TARGET_NAME }}".tags[0]')
           docker buildx imagetools inspect "$first_tag"
