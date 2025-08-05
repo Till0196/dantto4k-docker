@@ -90,7 +90,7 @@
         "# renovate: datasource=github-releases depName=(?<depName>\\S+)\\s*\\n\\s*variable \"[^\"]+\" {\\s*\\n\\s*default = \"(?<currentValue>[^\"]+)\""
       ],
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.*)$"
+      "versioningTemplate": "loose"
     },
     {
       "customType": "regex",
@@ -101,7 +101,7 @@
       ],
       "depNameTemplate": "tsduck/tsduck",
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.*)$"
+      "versioningTemplate": "loose"
     },
     {
       "customType": "regex",
@@ -112,7 +112,7 @@
       ],
       "depNameTemplate": "nekohkr/dantto4k",
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v?(?<version>.*)$"
+      "versioningTemplate": "loose"
     }
   ]
 }
