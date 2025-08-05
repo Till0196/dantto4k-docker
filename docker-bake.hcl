@@ -56,6 +56,11 @@ variable "BUILD_TIMESTAMP" {
   type    = string
 }
 
+variable "BUILD_BASE_IMAGE" {
+  default = true
+  type    = bool
+}
+
 variable "BUILD_DANTTO4K" {
   default = true
   type    = bool
@@ -107,7 +112,7 @@ target "dmirakurun-without-dantto4k" {
   dockerfile = "Dockerfile"
   context = "./dmirakurun"
   contexts = {
-    "ghcr.io/till0196/dmirakurun:base" = BUILD_DMIRAKURUN_BASE ? "target:dmirakurun-base" : "docker-image://${DMIRAKURUN_IMAGE}:base"
+    "ghcr.io/till0196/dmirakurun:base" = BUILD_BASE_IMAGE && BUILD_DMIRAKURUN_BASE ? "target:dmirakurun-base" : "docker-image://${DMIRAKURUN_IMAGE}:base"
   }
   target = "without-dnatto4k"
   tags = [
@@ -126,8 +131,8 @@ target "dmirakurun-with-dantto4k" {
   dockerfile = "Dockerfile"
   context = "./dmirakurun"
   contexts = {
-    "ghcr.io/till0196/dmirakurun:base" = BUILD_DMIRAKURUN_BASE ? "target:dmirakurun-base" : "docker-image://${DMIRAKURUN_IMAGE}:base"
-    "ghcr.io/till0196/dantto4k" = BUILD_DANTTO4K ? "target:dantto4k-${replace(DANTTO4K_VERSION, ".", "-")}" : "docker-image://${DANTTO4K_IMAGE}:${DANTTO4K_VERSION}"
+    "ghcr.io/till0196/dmirakurun:base" = BUILD_BASE_IMAGE && BUILD_DMIRAKURUN_BASE ? "target:dmirakurun-base" : "docker-image://${DMIRAKURUN_IMAGE}:base"
+    "ghcr.io/till0196/dantto4k" = BUILD_BASE_IMAGE && BUILD_DANTTO4K ? "target:dantto4k-${replace(DANTTO4K_VERSION, ".", "-")}" : "docker-image://${DANTTO4K_IMAGE}:${DANTTO4K_VERSION}"
   }
   target = "with-dantto4k"
   tags = [
@@ -151,7 +156,7 @@ target "depgstation" {
   dockerfile = "Dockerfile"
   context = "./depgstation"
   contexts = {
-    "ghcr.io/till0196/depgstation:base" = BUILD_DEPGSTATION_BASE ? "target:depgstation-base" : "docker-image://${DEPGSTATION_IMAGE}:base"
+    "ghcr.io/till0196/depgstation:base" = BUILD_BASE_IMAGE && BUILD_DEPGSTATION_BASE ? "target:depgstation-base" : "docker-image://${DEPGSTATION_IMAGE}:base"
   }
   tags = [
     "${DEPGSTATION_IMAGE}:${BUILD_TIMESTAMP}",

@@ -36,7 +36,7 @@ jobs:
           base_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
             map(select(
-              (.value.contexts // {} | to_entries | map(.value | startswith("target:")) | any) == false
+              (.value.contexts // {} | to_entries | map(.value | contains("target:")) | any) == false
             )) | 
             map(.key) | @json
           ')
@@ -46,7 +46,7 @@ jobs:
           dependent_targets=$(echo "$bake_data" | jq -r '
             .target | to_entries | 
             map(select(
-              (.value.contexts // {} | to_entries | map(.value | startswith("target:")) | any) == true
+              (.value.contexts // {} | to_entries | map(.value | contains("target:")) | any) == true
             )) | 
             map(.key) | @json
           ')
@@ -202,6 +202,7 @@ jobs:
             *.output=type=image,push-by-digest=true,name-canonical=true,push=true
             *.cache-from=type=gha,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
             *.cache-to=type=gha,mode=max,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
+            BUILD_BASE_IMAGE=false
 
       - name: Export digest
         run: |
@@ -220,7 +221,6 @@ jobs:
   merge-base:
     runs-on: ubuntu-latest
     needs: [prepare, build-base]
-    if: always() && needs.prepare.result == 'success'
     strategy:
       matrix:
         target-info: ${{ fromJson(needs.prepare.outputs.base-matrix) }}
@@ -239,31 +239,11 @@ jobs:
           path: /tmp/digests
           pattern: digests-${{ env.TARGET_NAME }}-*
           merge-multiple: true
-        continue-on-error: true
-        
-      - name: Check if all platform builds completed
-        id: check-builds
-        run: |
-          # Check if we have digests for both platforms
-          if [ -f "/tmp/digests/${{ env.TARGET_NAME }}-"* ]; then
-            digest_count=$(ls /tmp/digests/${{ env.TARGET_NAME }}-* 2>/dev/null | wc -l)
-            if [ "$digest_count" -eq 2 ]; then
-              echo "ready=true" >> $GITHUB_OUTPUT
-            else
-              echo "ready=false" >> $GITHUB_OUTPUT
-              echo "Only $digest_count platform(s) completed for ${{ env.TARGET_NAME }}"
-            fi
-          else
-            echo "ready=false" >> $GITHUB_OUTPUT
-            echo "No digests found for ${{ env.TARGET_NAME }}"
-          fi
 
       - name: Set up Docker Buildx
-        if: steps.check-builds.outputs.ready == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Login to ghcr.io
-        if: steps.check-builds.outputs.ready == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -271,7 +251,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create manifest list and push
-        if: steps.check-builds.outputs.ready == 'true'
         working-directory: /tmp/digests
         run: |
           # Get tags from docker-bake.hcl for this target
@@ -283,7 +262,6 @@ jobs:
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
 
       - name: Inspect image
-        if: steps.check-builds.outputs.ready == 'true'
         run: |
           # Get the first tag for inspection
           bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
@@ -293,7 +271,6 @@ jobs:
   merge-dependent:
     runs-on: ubuntu-latest
     needs: [prepare, build-dependent]
-    if: always() && needs.prepare.result == 'success'
     strategy:
       matrix:
         target-info: ${{ fromJson(needs.prepare.outputs.dependent-matrix) }}
@@ -312,31 +289,11 @@ jobs:
           path: /tmp/digests
           pattern: digests-${{ env.TARGET_NAME }}-*
           merge-multiple: true
-        continue-on-error: true
-        
-      - name: Check if all platform builds completed
-        id: check-builds
-        run: |
-          # Check if we have digests for both platforms
-          if [ -f "/tmp/digests/${{ env.TARGET_NAME }}-"* ]; then
-            digest_count=$(ls /tmp/digests/${{ env.TARGET_NAME }}-* 2>/dev/null | wc -l)
-            if [ "$digest_count" -eq 2 ]; then
-              echo "ready=true" >> $GITHUB_OUTPUT
-            else
-              echo "ready=false" >> $GITHUB_OUTPUT
-              echo "Only $digest_count platform(s) completed for ${{ env.TARGET_NAME }}"
-            fi
-          else
-            echo "ready=false" >> $GITHUB_OUTPUT
-            echo "No digests found for ${{ env.TARGET_NAME }}"
-          fi
 
       - name: Set up Docker Buildx
-        if: steps.check-builds.outputs.ready == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Login to ghcr.io
-        if: steps.check-builds.outputs.ready == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -344,7 +301,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create manifest list and push
-        if: steps.check-builds.outputs.ready == 'true'
         working-directory: /tmp/digests
         run: |
           # Get tags from docker-bake.hcl for this target
@@ -356,7 +312,6 @@ jobs:
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
 
       - name: Inspect image
-        if: steps.check-builds.outputs.ready == 'true'
         run: |
           # Get the first tag for inspection
           bake_data=$(docker buildx bake ${{ env.TARGET_NAME }} --print)
