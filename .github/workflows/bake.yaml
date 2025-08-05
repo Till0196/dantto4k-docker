@@ -310,9 +310,15 @@ jobs:
           
           # Check if digest files exist
           if ls ${{ env.TARGET_NAME }}-* 1> /dev/null 2>&1; then
-            docker buildx imagetools create \
-              $tag_args \
-              $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
+            # Extract digest hashes from filenames and create proper digest references
+            digest_refs=""
+            for file in ${{ env.TARGET_NAME }}-*; do
+              digest_hash="${file#${{ env.TARGET_NAME }}-}"
+              digest_refs="$digest_refs ${{ env.REGISTRY_IMAGE }}@sha256:$digest_hash"
+            done
+            
+            echo "DEBUG: Digest references: $digest_refs"
+            docker buildx imagetools create $tag_args $digest_refs
           else
             echo "ERROR: No digest files found for ${{ env.TARGET_NAME }}"
             exit 1
@@ -379,9 +385,15 @@ jobs:
           
           # Check if digest files exist
           if ls ${{ env.TARGET_NAME }}-* 1> /dev/null 2>&1; then
-            docker buildx imagetools create \
-              $tag_args \
-              $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' ${{ env.TARGET_NAME }}-*)
+            # Extract digest hashes from filenames and create proper digest references
+            digest_refs=""
+            for file in ${{ env.TARGET_NAME }}-*; do
+              digest_hash="${file#${{ env.TARGET_NAME }}-}"
+              digest_refs="$digest_refs ${{ env.REGISTRY_IMAGE }}@sha256:$digest_hash"
+            done
+            
+            echo "DEBUG: Digest references: $digest_refs"
+            docker buildx imagetools create $tag_args $digest_refs
           else
             echo "ERROR: No digest files found for ${{ env.TARGET_NAME }}"
             exit 1
