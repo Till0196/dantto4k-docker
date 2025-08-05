@@ -17,7 +17,7 @@ RUN apt-get update && \
         echo "deb http://cdn.debian.net/debian stable main contrib non-free" >> /etc/apt/sources.list; \
     fi && \
     # Add Raspberry Pi repository for ARM architectures
-    if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
+    if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "armhf" ]; then \
         curl -fsSL https://archive.raspberrypi.org/debian/raspberrypi.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/raspberrypi.gpg && \
         echo "deb [arch=$(dpkg --print-architecture)] https://archive.raspberrypi.org/debian $(lsb_release -c -s) main" >> /etc/apt/sources.list; \
     fi && \
@@ -37,8 +37,8 @@ RUN apt-get update && \
             mesa-va-drivers \
             intel-opencl-icd; \
     fi && \
-    # Install ARM/Raspberry Pi specific packages for arm64/arm
-    if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
+    # Install ARM/Raspberry Pi specific packages for arm64/armhf
+    if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "armhf" ]; then \
         apt-get install -y --no-install-recommends \
             sqlite3-pcre \
             libomxil-bellagio0 \
