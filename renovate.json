@@ -67,7 +67,7 @@
     {
       "description": "Custom dantto4k and tsduck versions from custom managers",
       "matchManagers": [
-        "regex"
+        "custom.regex"
       ],
       "matchPackageNames": [
         "nekohkr/dantto4k",
