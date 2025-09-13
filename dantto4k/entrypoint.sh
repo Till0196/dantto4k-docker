@@ -44,7 +44,11 @@ else
 fi
 
 function start() {
+<<<<<<< HEAD
   socat tcp-listen:40775,fork,reuseaddr,keepalive,keepidle=10,keepintvl=10,keepcnt=3 "system:/usr/local/bin/dantto4k $DANTTO4K_ARGS" &
+=======
+  socat tcp-listen:40775,fork,reuseaddr,keepalive,keepidle=5,keepintvl=10,keepcnt=3,so-rcvtimeo=5,so-sndtimeo=5 "system:/usr/local/bin/dantto4k $DANTTO4K_ARGS" &
+>>>>>>> 2b66dee (改善: socatコマンドのtimeoutオプションを詳細なkeepalive設定に変更)
   wait
 }
 
