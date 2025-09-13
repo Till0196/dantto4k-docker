@@ -44,7 +44,7 @@ else
 fi
 
 function start() {
-  socat tcp-listen:40775,fork,reuseaddr,keepalive,keepidle=10,keepintvl=10,keepcnt=3 "system:/usr/local/bin/dantto4k $DANTTO4K_ARGS" &
+  socat -T 10 tcp-listen:40775,fork,reuseaddr "system:/usr/local/bin/dantto4k $DANTTO4K_ARGS" &
   wait
 }
 
