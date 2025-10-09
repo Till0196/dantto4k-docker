@@ -9,7 +9,7 @@ variable "DANTTO4K_VERSIONS" {
 
 # renovate: datasource=github-releases depName=nekohkr/dantto4k
 variable "DANTTO4K_LATEST_VERSION" {
-  default = "1.0.0-rc8"
+  default = "1.0.0-rc9"
   type    = string
 }
 
