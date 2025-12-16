@@ -85,8 +85,8 @@ RUN git clone --depth 1 --branch v${DANTTO4K_VERSION} --recurse-submodules https
     if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
         sed -i 's/ -maes//g; s/ -msse4.1//g' Makefile && \
         # aesCtrCipher.hのx86専用ヘッダーを条件付きにする
-        sed -i '5i#if !defined(__aarch64__) && !defined(__arm__)' src/aesCtrCipher.h && \
-        sed -i '7a#endif' src/aesCtrCipher.h && \
+        sed -i '/<immintrin.h>/i#if !defined(__aarch64__) && !defined(__arm__)' src/aesCtrCipher.h && \
+        sed -i '/<tmmintrin.h>/a#endif' src/aesCtrCipher.h && \
         # AES-NIチェックとハードウェア実装を無効化
         sed -i 's/return (info\[2\] & (1 << 25)) != 0;/return false;/' src/aesCtrCipher.h; \
     fi && \
