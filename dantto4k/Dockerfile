@@ -85,8 +85,10 @@ RUN git clone --depth 1 --branch v${DANTTO4K_VERSION} --recurse-submodules https
     if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
         sed -i 's/ -maes//g; s/ -msse4.1//g' Makefile && \
         # aesCtrCipher.h全体をx86専用にし、ARM用のダミークラスを提供
-        sed -i '1s/^/#if !defined(__aarch64__) \&\& !defined(__arm__)\n/' src/aesCtrCipher.h && \
-        printf '\n#else\nclass AESCtrCipher { public: static bool hasAESNI() { return false; } };\n#endif\n' >> src/aesCtrCipher.h; \
+        sed -i '/#pragma once/a #if !defined(__aarch64__) && !defined(__arm__)' src/aesCtrCipher.h && \
+        echo '#else' >> src/aesCtrCipher.h && \
+        echo 'class AESCtrCipher { public: static bool hasAESNI() { return false; } };' >> src/aesCtrCipher.h && \
+        echo '#endif' >> src/aesCtrCipher.h; \
     fi && \
     # <cstddef>ヘッダーをインクルードしsize_t未定義エラーを回避
     sed -i 's/^CXXFLAGS = \(.*\)$/CXXFLAGS = \1 -include cstddef/' Makefile && \
