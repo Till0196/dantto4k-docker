@@ -81,6 +81,11 @@ RUN echo /opt/tsduck/lib > /etc/ld.so.conf.d/tsduck.conf && \
 # Build Dantto4k
 RUN git clone --depth 1 --branch v${DANTTO4K_VERSION} --recurse-submodules https://github.com/nekohkr/dantto4k.git /tmp/dantto4k && \
     cd /tmp/dantto4k && \
+    # ARMでは-maesと-msse4.1を除外
+    if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
+        sed -i 's/ -maes//g; s/ -msse4.1//g' Makefile; \
+    fi && \
+    # <cstddef>ヘッダーをインクルードしsize_t未定義エラーを回避
     sed -i 's/^CXXFLAGS = \(.*\)$/CXXFLAGS = \1 -include cstddef/' Makefile && \
     PKG_CONFIG_PATH="/opt/tsduck/share/pkgconfig:${PKG_CONFIG_PATH}" \
     make CXX=clang++ && \
