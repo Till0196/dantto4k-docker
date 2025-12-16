@@ -1,8 +1,10 @@
 # renovate: datasource=github-releases depName=nekohkr/dantto4k
+# renovate: datasource=github-releases depName=nekohkr/dantto4k
 variable "DANTTO4K_VERSIONS" {
   default = [
-    "1.0.0-rc9",
-    "1.0.0-rc8"
+    "1.0.0",
+    "1.0.0-rc15",
+    "1.0.0-rc14",
   ]
   type    = list(string)
 }
