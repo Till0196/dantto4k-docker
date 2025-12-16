@@ -1,0 +1,24 @@
+- name: "ＢＳ朝日　４Ｋ"
+  type: BS4K
+  channel: "CATV_C14"
+  tsmfRelTs: 10
+- name: "ＢＳ日テレ　４Ｋ"
+  type: BS4K
+  channel: "CATV_C15"
+  tsmfRelTs: 12
+- name: "ＢＳテレ東４Ｋ"
+  type: BS4K
+  channel: "CATV_C16"
+  tsmfRelTs: 11
+- name: "ＢＳフジ４Ｋ"
+  type: BS4K
+  channel: "CATV_C18"
+  tsmfRelTs: 12
+- name: "ＮＨＫ　ＢＳＰ４Ｋ"
+  type: BS4K
+  channel: "CATV_C19"
+  tsmfRelTs: 10
+- name: "ＢＳ－ＴＢＳ　４Ｋ"
+  type: BS4K
+  channel: "CATV_C20"
+  tsmfRelTs: 11
