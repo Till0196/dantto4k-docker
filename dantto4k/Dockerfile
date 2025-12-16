@@ -81,9 +81,14 @@ RUN echo /opt/tsduck/lib > /etc/ld.so.conf.d/tsduck.conf && \
 # Build Dantto4k
 RUN git clone --depth 1 --branch v${DANTTO4K_VERSION} --recurse-submodules https://github.com/nekohkr/dantto4k.git /tmp/dantto4k && \
     cd /tmp/dantto4k && \
-    # ARMでは-maesと-msse4.1を除外
+    # ARMでは-maesと-msse4.1を除外、x86専用のコードを無効化
     if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
-        sed -i 's/ -maes//g; s/ -msse4.1//g' Makefile; \
+        sed -i 's/ -maes//g; s/ -msse4.1//g' Makefile && \
+        # aesCtrCipher.hのx86専用ヘッダーを条件付きにする
+        sed -i '5i#if !defined(__aarch64__) && !defined(__arm__)' src/aesCtrCipher.h && \
+        sed -i '7a#endif' src/aesCtrCipher.h && \
+        # AES-NIチェックとハードウェア実装を無効化
+        sed -i 's/return (info\[2\] & (1 << 25)) != 0;/return false;/' src/aesCtrCipher.h; \
     fi && \
     # <cstddef>ヘッダーをインクルードしsize_t未定義エラーを回避
     sed -i 's/^CXXFLAGS = \(.*\)$/CXXFLAGS = \1 -include cstddef/' Makefile && \
