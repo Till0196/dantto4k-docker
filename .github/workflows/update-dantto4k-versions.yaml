@@ -129,7 +129,7 @@ jobs:
               return;
             }
             
-            const body = \`## Dantto4k Versions Update
+            const body = `## Dantto4k Versions Update
 
             This PR updates the DANTTO4K_VERSIONS array to contain only the latest 3 releases from the nekohkr/dantto4k repository.
 
@@ -147,13 +147,13 @@ jobs:
             ### Testing
 
             Please verify that the docker-bake configuration is valid:
-            \\\`\\\`\\\`bash
+            \`\`\`bash
             docker buildx bake --print all
-            \\\`\\\`\\\`
+            \`\`\`
 
             ---
 
-            🤖 This PR was created automatically by the dantto4k versions update workflow.\`;
+            🤖 This PR was created automatically by the dantto4k versions update workflow.`;
 
             const { data: pr } = await github.rest.pulls.create({
               owner,
@@ -169,7 +169,7 @@ jobs:
               owner,
               repo,
               issue_number: pr.number,
-              labels: ['dantto4k', 'version-update', 'automated-pr']
+              labels: ['version-update']
             });
             
             console.log(`Created PR #${pr.number}: ${pr.html_url}`);

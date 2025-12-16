@@ -14,7 +14,7 @@ RUN apt-get update && \
     curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/debian-jellyfin.gpg && \
     echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/master/debian $(lsb_release -c -s) main" > /etc/apt/sources.list.d/jellyfin.list && \
     if [ "$TARGETARCH" = "amd64" ]; then \
-        echo "deb http://cdn.debian.net/debian stable main contrib non-free" >> /etc/apt/sources.list; \
+        echo "deb http://cdn.debian.net/debian stable main contrib non-free non-free-firmware" >> /etc/apt/sources.list; \
     fi && \
     # Add Raspberry Pi repository for ARM architectures
     if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "armhf" ]; then \

@@ -18,6 +18,7 @@
   ],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,
+  "prCreation": "immediate",
   "semanticCommits": "enabled",
   "commitMessagePrefix": "chore:",
   "branchPrefix": "renovate/",
@@ -78,7 +79,10 @@
       ],
       "schedule": [
         "before 9am on monday"
-      ]
+      ],
+      "automerge": false,
+      "enabled": true,
+      "prCreation": "immediate"
     }
   ],
   "customManagers": [
