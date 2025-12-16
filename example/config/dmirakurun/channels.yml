@@ -1,0 +1,12 @@
+- name: "ＢＳ朝日　４Ｋ"
+  type: BS4K
+  channel: "CATV_C14"
+  tsmfRelTs: 10
+- name: "ＢＳ日テレ　４Ｋ"
+  type: BS4K
+  channel: "CATV_C15"
+  tsmfRelTs: 12
+- name: "ＢＳテレ東４Ｋ"
+  type: BS4K
+  channel: "CATV_C16"
+  tsmfRelTs: 11

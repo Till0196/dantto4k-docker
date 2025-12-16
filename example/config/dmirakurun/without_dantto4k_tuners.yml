@@ -8,7 +8,8 @@
     dvbv5-zap -C JP -a 0 -c
     /usr/local/dvbconf-for-isdb/conf/dvbv5_channels.conf -r -P <channel>
   decoder: arib-b25-stream-test
-  mmtsDecoder: dantto4k - -
+  mmtsDecoder: >-
+    socat -,cool-write tcp-connect:dantto4k-server:40775
   isDisabled: true
   dvbDevicePath: /dev/dvb/adapter0/dvr0
 - name: MaxM4-1
@@ -21,7 +22,8 @@
     dvbv5-zap -C JP -a 1 -c
     /usr/local/dvbconf-for-isdb/conf/dvbv5_channels.conf -r -P <channel>
   decoder: arib-b25-stream-test
-  mmtsDecoder: dantto4k - -
+  mmtsDecoder: >-
+    socat -,cool-write tcp-connect:dantto4k-server:40775
   isDisabled: true
   dvbDevicePath: /dev/dvb/adapter1/dvr0
 - name: MaxM4-2
@@ -34,7 +36,8 @@
     dvbv5-zap -C JP -a 2 -c
     /usr/local/dvbconf-for-isdb/conf/dvbv5_channels.conf -r -P <channel>
   decoder: arib-b25-stream-test
-  mmtsDecoder: dantto4k - -
+  mmtsDecoder: >-
+    socat -,cool-write tcp-connect:dantto4k-server:40775
   isDisabled: true
   dvbDevicePath: /dev/dvb/adapter2/dvr0
 - name: MaxM4-3
@@ -47,6 +50,7 @@
     dvbv5-zap -C JP -a 3 -c
     /usr/local/dvbconf-for-isdb/conf/dvbv5_channels.conf -r -P <channel>
   decoder: arib-b25-stream-test
-  mmtsDecoder: dantto4k - -
+  mmtsDecoder: >-
+    socat -,cool-write tcp-connect:dantto4k-server:40775
   isDisabled: false
   dvbDevicePath: /dev/dvb/adapter3/dvr0
