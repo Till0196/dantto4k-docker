@@ -61,6 +61,7 @@ WORKDIR /app
 # Install dantto4k dependencies
 RUN apt-get update && \
     apt-get install -y \
+    git \
     libssl-dev \
     libedit-dev \
     zlib1g-dev \
@@ -78,10 +79,9 @@ RUN echo /opt/tsduck/lib > /etc/ld.so.conf.d/tsduck.conf && \
     ldconfig
 
 # Build Dantto4k
-RUN mkdir /tmp/dantto4k && \
+RUN git clone --depth 1 --branch v${DANTTO4K_VERSION} --recurse-submodules https://github.com/nekohkr/dantto4k.git /tmp/dantto4k && \
     cd /tmp/dantto4k && \
-    curl -sSL https://github.com/nekohkr/dantto4k/tarball/v${DANTTO4K_VERSION} | tar -xz --strip-component=1 && \
-    sed -i 's/CXXFLAGS = \(.*\)/CXXFLAGS = \1 -include cstddef/' Makefile && \
+    sed -i 's/^CXXFLAGS = \(.*\)$/CXXFLAGS = \1 -include cstddef/' Makefile && \
     PKG_CONFIG_PATH="/opt/tsduck/share/pkgconfig:${PKG_CONFIG_PATH}" \
     make CXX=clang++ && \
     make install
