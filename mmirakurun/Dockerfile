@@ -36,7 +36,7 @@ RUN apt-get update && \
         libdvbv5-dev \
         pcsc-tools \
         dvb-tools \
-        && \
+        socat && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=build /app /app
