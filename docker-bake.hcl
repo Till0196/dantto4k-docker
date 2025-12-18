@@ -211,6 +211,7 @@ group "all" {
     "dmirakurun-base",
     "dmirakurun-without-dantto4k",
     "dmirakurun-with-dantto4k",
+    "mmirakurun",
     "depgstation-base",
     "depgstation"
   ]
