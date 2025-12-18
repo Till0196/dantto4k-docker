@@ -19,7 +19,7 @@ RUN apt-get update && \
 
 FROM base AS tsduck-build
 # renovate: datasource=github-releases depName=tsduck/tsduck
-ARG TSDUCK_VERSION=3.41-4299
+ARG TSDUCK_VERSION=3.42-4421
 
 WORKDIR /app
 RUN apt-get update && \

@@ -16,7 +16,7 @@ variable "DANTTO4K_LATEST_VERSION" {
 
 # renovate: datasource=github-releases depName=tsduck/tsduck
 variable "TSDUCK_VERSION" {
-  default = "3.41-4299"
+  default = "3.42-4421"
   type    = string
 }
 
