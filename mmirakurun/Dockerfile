@@ -9,6 +9,7 @@ RUN apt-get update && \
         curl && \
     curl -sSL https://github.com/otya128/MMirakurun/tarball/master | tar -xz --strip-component=1 && \
     npm ci --include=dev && \
+    npx tslint --project . --fix && \
     npm run build && \
     npm ci --omit=dev
 
