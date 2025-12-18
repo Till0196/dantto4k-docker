@@ -66,13 +66,14 @@
       ]
     },
     {
-      "description": "Custom dantto4k and tsduck versions from custom managers",
+      "description": "Custom dantto4k tsduck casproxyserver versions from custom managers",
       "matchManagers": [
         "custom.regex"
       ],
       "matchPackageNames": [
         "nekohkr/dantto4k",
-        "tsduck/tsduck"
+        "tsduck/tsduck",
+        "nekohkr/casproxyserver"
       ],
       "labels": [
         "version-update"
@@ -115,6 +116,17 @@
         "# renovate: datasource=github-releases depName=nekohkr/dantto4k\\s*\\n\\s*ARG DANTTO4K_VERSION=(?<currentValue>\\S+)"
       ],
       "depNameTemplate": "nekohkr/dantto4k",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "Update CASPROXYSERVER_VERSION in Dockerfile",
+      "managerFilePatterns": ["casproxyserver/Dockerfile"],
+      "matchStrings": [
+        "# renovate: datasource=github-releases depName=nekohkr/casproxyserver\\s*\\n\\s*ARG CASPROXYSERVER_VERSION=(?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "nekohkr/casproxyserver",
       "datasourceTemplate": "github-releases",
       "versioningTemplate": "loose"
     }

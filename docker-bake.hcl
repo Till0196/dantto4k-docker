@@ -25,6 +25,11 @@ variable "DANTTO4K_IMAGE" {
   type    = string
 }
 
+variable "CASPROXYSERVER_IMAGE" {
+  default = "ghcr.io/till0196/casproxyserver"
+  type    = string
+}
+
 variable "DMIRAKURUN_IMAGE" {
   default = "ghcr.io/till0196/dmirakurun"
   type    = string
@@ -37,6 +42,11 @@ variable "DMIRAKURUN_REPO" {
 
 variable "DMIRAKURUN_BRANCH" {
   default = "master"
+  type    = string
+}
+
+variable "MMIRAKURUN_IMAGE" {
+  default = "ghcr.io/till0196/mmirakurun"
   type    = string
 }
 
@@ -100,6 +110,17 @@ target "dantto4k" {
   }
 }
 
+# casproxyserver image
+target "casproxyserver" {
+  dockerfile = "Dockerfile"
+  context = "./casproxyserver"
+  target = "release"
+  tags   = [
+    "${CASPROXYSERVER_IMAGE}:${BUILD_TIMESTAMP}",
+    "${CASPROXYSERVER_IMAGE}:latest"
+  ]
+}
+
 # DMirakurun base image without dantto4k
 target "dmirakurun-base" {
   dockerfile = "docker/Dockerfile"
@@ -146,6 +167,16 @@ target "dmirakurun-with-dantto4k" {
   ]
 }
 
+# MMirakurun
+target "mmirakurun" {
+  dockerfile = "Dockerfile"
+  context = "./mmirakurun"
+  tags = [
+    "${MMIRAKURUN_IMAGE}:${BUILD_TIMESTAMP}",
+    "${MMIRAKURUN_IMAGE}:latest"
+  ]
+}
+
 target "depgstation-base" {
   dockerfile = "Dockerfile.debian"
   context = "${DEPGSTATION_REPO}#${DEPGSTATION_BRANCH}"
@@ -170,12 +201,17 @@ target "depgstation" {
 
 # Group targets
 group "default" {
-  targets = ["dmirakurun-with-dantto4k", "depgstation"]
+  targets = [
+    "dmirakurun-with-dantto4k",
+    "depgstation",
+    "casproxyserver"
+  ]
 }
 
 group "all" {
   targets = [
     "dantto4k",
+    "casproxyserver",
     "dmirakurun-base",
     "dmirakurun-without-dantto4k",
     "dmirakurun-with-dantto4k",
