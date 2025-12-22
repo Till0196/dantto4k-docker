@@ -1,4 +1,4 @@
-FROM debian:bookworm AS base
+FROM debian:trixie AS base
 
 WORKDIR /app
 RUN apt-get update && \
