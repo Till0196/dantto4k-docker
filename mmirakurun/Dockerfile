@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         curl && \
-    curl -sSL https://github.com/otya128/MMirakurun/tarball/master | tar -xz --strip-component=1 && \
+    curl -sSL https://github.com/otya128/MMirakurun/archive/refs/tags/3.9.0-rc.4-4K.tar.gz | tar -xz --strip-component=1 && \
     npm ci --include=dev && \
     npx tslint --project . --fix && \
     npm run build && \
