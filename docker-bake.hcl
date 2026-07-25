@@ -10,9 +10,11 @@ variable "DANTTO4K_LATEST_VERSION" {
   type    = string
 }
 
+# NOTE: 3.44+ hits LWG3585 on libstdc++12 (Debian bookworm) when building tsduck with
+# clang; see dantto4k/Dockerfile for details. Keep below 3.44 until that's resolved.
 # renovate: datasource=github-releases depName=tsduck/tsduck
 variable "TSDUCK_VERSION" {
-  default = "3.44-4676"
+  default = "3.43-4549"
   type    = string
 }
 
