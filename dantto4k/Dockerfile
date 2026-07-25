@@ -91,10 +91,11 @@ RUN git clone --depth 1 --branch v${DANTTO4K_VERSION} --recurse-submodules https
     if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
         sed -i 's/ -maes//g; s/ -msse4.1//g' Makefile && \
         # aesCtrCipher.h全体をx86専用にし、ARM用のダミークラスを提供
-        sed -i '1s/^/#if !defined(__aarch64__) \&\& !defined(__arm__)\n/' src/aesCtrCipher.h && \
-        printf '\n#else\nclass AESCtrCipher { public: static bool hasAESNI() { return false; }\n' >> src/aesCtrCipher.h && \
-        printf 'template<class T> AESCtrCipher(T) {} template<class T> void setIv(T) {}\n' >> src/aesCtrCipher.h && \
-        printf 'template<class... A> void decrypt(A...) {} };\n#endif\n' >> src/aesCtrCipher.h; \
+        # (AESCtrCipher(): デフォルト構築, setKey()/setIv()/decrypt(): AcasHandler側のインターフェースに合わせる)
+        sed -i '1s/^/#pragma once\n#include <array>\n#include <cstdint>\n#include <cstddef>\n#if !defined(__aarch64__) \&\& !defined(__arm__)\n/' src/aesCtrCipher.h && \
+        printf '\n#else\nclass AESCtrCipher {\npublic:\n    AESCtrCipher() = default;\n    static bool hasAESNI() { return false; }\n' >> src/aesCtrCipher.h && \
+        printf '    void setKey(const std::array<uint8_t, 16>&) {}\n    void setIv(std::array<uint8_t, 16>) {}\n' >> src/aesCtrCipher.h && \
+        printf '    void decrypt(uint8_t*, size_t, uint8_t*) const {}\n};\n#endif\n' >> src/aesCtrCipher.h; \
     fi && \
     # <cstddef>ヘッダーをインクルードしsize_t未定義エラーを回避
     sed -i 's/^CXXFLAGS = \(.*\)$/CXXFLAGS = \1 -include cstddef/' Makefile && \
