@@ -1,5 +1,8 @@
 FROM debian:bookworm AS base
 
+# renovate: datasource=github-releases depName=llvm/llvm-project
+ARG LLVM_VERSION=20
+
 WORKDIR /app
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -8,12 +11,11 @@ RUN apt-get update && \
     gpg \
     lsb-release \
     software-properties-common && \
-    curl -fsSL https://apt.llvm.org/llvm.sh | bash && \
+    curl -fsSL https://apt.llvm.org/llvm.sh | bash -s -- ${LLVM_VERSION} && \
     # Set up alternatives for clang/clang++ without version suffix
-    CLANG_VERSION=$(ls /usr/bin/clang-* | grep -o '[0-9]\+' | head -1) && \
-    update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${CLANG_VERSION} 100 && \
-    update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${CLANG_VERSION} 100 && \
-    update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-${CLANG_VERSION} 100 && \
+    update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM_VERSION} 100 && \
+    update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM_VERSION} 100 && \
+    update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-${LLVM_VERSION} 100 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

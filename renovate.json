@@ -73,7 +73,8 @@
       "matchPackageNames": [
         "nekohkr/dantto4k",
         "tsduck/tsduck",
-        "nekohkr/casproxyserver"
+        "nekohkr/casproxyserver",
+        "llvm/llvm-project"
       ],
       "labels": [
         "version-update"
@@ -128,6 +129,18 @@
       ],
       "depNameTemplate": "nekohkr/casproxyserver",
       "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "Update LLVM_VERSION in Dockerfiles",
+      "managerFilePatterns": ["dantto4k/Dockerfile", "casproxyserver/Dockerfile"],
+      "matchStrings": [
+        "# renovate: datasource=github-releases depName=llvm/llvm-project\\s*\\n\\s*ARG LLVM_VERSION=(?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "llvm/llvm-project",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^llvmorg-(?<version>\\d+)\\.\\d+\\.\\d+$",
       "versioningTemplate": "loose"
     }
   ]
