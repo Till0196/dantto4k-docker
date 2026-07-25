@@ -20,12 +20,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM base AS tsduck-build
-# NOTE: 3.44+ adds dtv/tables/mpeg/tsDSMCCUserToNetworkMessage.cpp, whose std::variant<...>
-# assignment hits LWG3585 (converting assignment with immovable alternative) on libstdc++12
-# (Debian bookworm). Fixed in libstdc++13 (trixie), but base image must stay bookworm for
-# glibc compatibility, so keep TSDUCK_VERSION below 3.44 until this is otherwise resolved.
 # renovate: datasource=github-releases depName=tsduck/tsduck
-ARG TSDUCK_VERSION=3.43-4549
+ARG TSDUCK_VERSION=3.44-4676
 
 WORKDIR /app
 RUN apt-get update && \
@@ -46,6 +42,12 @@ RUN mkdir tsduck && \
     curl -sSL https://github.com/tsduck/tsduck/tarball/v${TSDUCK_VERSION} | tar -xz --strip-component=1 && \
     # fix NODOC option
     sed -i '/gem install/d' scripts/install-prerequisites.sh && \
+    # tsDSMCCUserToNetworkMessage.cpp (3.44+) assigns into a std::variant whose
+    # DownloadInfoIndication alternative is immovable. libstdc++12 (bookworm) predates
+    # LWG3585, so its converting assignment falls back to move-assign instead of emplace
+    # and fails to compile. Rewrite the assignments as explicit emplace() calls.
+    sed -i 's/body = \*dsi;/body.emplace<DownloadServerInitiate>(*dsi);/g; s/body = std::monostate{};/body.emplace<std::monostate>();/g' \
+        src/libtsduck/dtv/tables/mpeg/tsDSMCCUserToNetworkMessage.cpp && \
     ./scripts/install-prerequisites.sh NORIST=1 NOSRT=1 NOVATEK=1 NOJAVA=1 NODOXYGEN=1 NODOC=1 && \
     mkdir -p /opt/tsduck && \
     make -j$(( $(grep cpu.cores /proc/cpuinfo | sort -u | sed 's/[^0-9]//g') + 1 )) \
