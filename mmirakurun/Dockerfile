@@ -1,5 +1,5 @@
 ARG ARCH=
-FROM ${ARCH}node:22.14.0-bookworm AS build
+FROM ${ARCH}node:24.18.0-bookworm AS build
 WORKDIR /app
 ENV DOCKER=YES NODE_ENV=production
 RUN apt-get update && \
@@ -21,7 +21,7 @@ RUN mkdir -p /tmp/recdvb && \
     make -j$(( $(grep cpu.cores /proc/cpuinfo | sort -u | sed 's/[^0-9]//g') + 1 )) && \
     make install
 
-FROM ${ARCH}node:22.14.0-bookworm-slim
+FROM ${ARCH}node:24.18.0-bookworm-slim
 WORKDIR /app
 RUN apt-get update && \
     apt-get upgrade -y && \
