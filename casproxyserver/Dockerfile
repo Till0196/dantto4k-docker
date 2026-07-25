@@ -20,7 +20,7 @@ RUN apt-get update && \
 
 FROM base AS casproxyserver-build
 # renovate: datasource=github-releases depName=nekohkr/casproxyserver
-ARG CASPROXYSERVER_VERSION=1.0.0
+ARG CASPROXYSERVER_VERSION=1.1.0
 
 WORKDIR /app
 
