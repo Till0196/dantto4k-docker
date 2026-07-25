@@ -142,12 +142,17 @@ jobs:
             *.cache-to=type=gha,mode=max,scope=${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
 
       - name: Export digest
+        env:
+          BAKE_METADATA: ${{ steps.bake.outputs.metadata }}
         run: |
           mkdir -p /tmp/digests
-          
-          # Write raw metadata to file without toJSON wrapper
-          echo '${{ steps.bake.outputs.metadata }}' > /tmp/metadata.json
-          
+
+          # Write raw metadata to file without toJSON wrapper.
+          # Passed via env var (not interpolated into the script) so that quote
+          # characters in the metadata (e.g. from compiler warning text) can't
+          # break the shell syntax.
+          printf '%s' "$BAKE_METADATA" > /tmp/metadata.json
+
           # Extract digest from metadata file
           digest=$(cat /tmp/metadata.json | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
           
@@ -225,12 +230,17 @@ jobs:
           BUILD_BASE_IMAGE: false
 
       - name: Export digest
+        env:
+          BAKE_METADATA: ${{ steps.bake.outputs.metadata }}
         run: |
           mkdir -p /tmp/digests
-          
-          # Write raw metadata to file without toJSON wrapper
-          echo '${{ steps.bake.outputs.metadata }}' > /tmp/metadata.json
-          
+
+          # Write raw metadata to file without toJSON wrapper.
+          # Passed via env var (not interpolated into the script) so that quote
+          # characters in the metadata (e.g. from compiler warning text) can't
+          # break the shell syntax.
+          printf '%s' "$BAKE_METADATA" > /tmp/metadata.json
+
           # Extract digest from metadata file
           digest=$(cat /tmp/metadata.json | jq -r '.["${{ env.TARGET_NAME }}"]["containerimage.digest"]' 2>/dev/null || echo "")
           
