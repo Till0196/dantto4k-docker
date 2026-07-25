@@ -20,8 +20,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM base AS tsduck-build
+# NOTE: 3.44+ adds dtv/tables/mpeg/tsDSMCCUserToNetworkMessage.cpp, whose std::variant<...>
+# assignment hits LWG3585 (converting assignment with immovable alternative) on libstdc++12
+# (Debian bookworm). Fixed in libstdc++13 (trixie), but base image must stay bookworm for
+# glibc compatibility, so keep TSDUCK_VERSION below 3.44 until this is otherwise resolved.
 # renovate: datasource=github-releases depName=tsduck/tsduck
-ARG TSDUCK_VERSION=3.44-4676
+ARG TSDUCK_VERSION=3.43-4549
 
 WORKDIR /app
 RUN apt-get update && \
