@@ -97,7 +97,7 @@ services:
     restart: always
 
   depgstation_db:
-    image: mariadb:10.5
+    image: mariadb:12.3
     # image: mysql:8.0 # 囲み文字を使用する場合
     volumes:
       - source: depgstation_db_data
