@@ -172,7 +172,7 @@ jobs:
           fi
 
       - name: Upload digest
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: digests-${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/*
@@ -260,7 +260,7 @@ jobs:
           fi
 
       - name: Upload digest
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: digests-${{ env.TARGET_NAME }}-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/*
@@ -284,7 +284,7 @@ jobs:
           echo "REGISTRY_IMAGE=$(echo ${{ matrix.target-info.image }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Download digests
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: /tmp/digests
           pattern: digests-${{ env.TARGET_NAME }}-*
@@ -371,7 +371,7 @@ jobs:
           echo "REGISTRY_IMAGE=$(echo ${{ matrix.target-info.image }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Download digests
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: /tmp/digests
           pattern: digests-${{ env.TARGET_NAME }}-*
