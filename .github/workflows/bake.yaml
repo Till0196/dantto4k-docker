@@ -128,7 +128,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Build and push by digest
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         id: bake
         with:
           source: "."
@@ -214,7 +214,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Build and push by digest
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         id: bake
         with:
           source: "."
