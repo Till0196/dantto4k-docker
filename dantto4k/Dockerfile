@@ -1,4 +1,4 @@
-FROM debian:bookworm AS base
+FROM debian:trixie AS base
 
 # renovate: datasource=github-releases depName=llvm/llvm-project
 ARG LLVM_VERSION=20
